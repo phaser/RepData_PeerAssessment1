@@ -1,14 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
-```{r, results="hide"}
+
+```r
 # create the directory if it doesn't exist
 if (!file.exists("data"))
 {
@@ -35,7 +31,8 @@ csv <- read.csv("data/activity.csv")
 
 ### Calculate the total number of steps taken per day
 
-```{r}
+
+```r
 byDay <- aggregate(csv$steps, by=list(Date=csv$date), FUN=sum, na.rm=TRUE)
 ```
 
@@ -43,17 +40,32 @@ The total number of steps taken per day is represented here by the variable x.
 
 ### Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 hist(byDay$x, breaks=20, xlab="Steps", main="Histogram of the total number of steps taken per day")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 ### Calculate and report the mean and median of the total number of steps taken per day
 
 We can see the mean and the median in the summary of the byDay data set computed
 earlier.
 
-```{r}
+
+```r
 summary(byDay)
+```
+
+```
+##          Date          x        
+##  2012-10-01: 1   Min.   :    0  
+##  2012-10-02: 1   1st Qu.: 6778  
+##  2012-10-03: 1   Median :10395  
+##  2012-10-04: 1   Mean   : 9354  
+##  2012-10-05: 1   3rd Qu.:12811  
+##  2012-10-06: 1   Max.   :21194  
+##  (Other)   :55
 ```
 
 ## What is the average daily activity pattern?
@@ -61,34 +73,61 @@ summary(byDay)
 The following graph shows the daily activity pattern by plotting a time serries
 of the averages of steps by interval.
 
-```{r}
+
+```r
 byInterval <- aggregate(csv$steps, by=list(Interval=csv$interval), FUN=mean, na.rm=TRUE)
 plot(byInterval$Interval, byInterval$x, type="l", xlab="Interval", ylab="Average steps in interval", main="Average steps in interval")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 It is not clear from the graph which interval has the highest value so we'll
 compute it.
 
-```{r}
+
+```r
 maxVal <- max(byInterval$x)
 byInterval[byInterval$x == maxVal,]
 ```
 
+```
+##     Interval        x
+## 104      835 206.1698
+```
+
 ## Imputing missing values
 
-```{r}
+
+```r
 summary(csv)
+```
+
+```
+##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##  NA's   :2304     (Other)   :15840
 ```
 From the summary we can see that only the steps column has NAs.
 
-```{r}
+
+```r
 temp = is.na(csv$steps)
 print(paste("Total number of rows with NAs: ", length(csv$steps[temp]), sep=""))
 ```
 
+```
+## [1] "Total number of rows with NAs: 2304"
+```
+
 Filling in the missing values in steps with values computed in byInterval dataset.
 
-```{r}
+
+```r
 rowids <- 1:nrow(csv)
 steps <- sapply(rowids, function(r) 
     {
@@ -103,19 +142,35 @@ newCsv <- csv
 newCsv$steps <- steps
 ```
 
-```{r}
+
+```r
 byDay <- aggregate(newCsv$steps, by=list(Date=newCsv$date), FUN=sum, na.rm=TRUE)
 hist(byDay$x, breaks=20, xlab="Steps", main="Histogram of the total number of steps taken per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
+
 ###Mean and median.
-```{r}
+
+```r
 summary(newCsv)
+```
+
+```
+##      steps                date          interval     
+##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
+##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
+##  Median :  0.00   2012-10-03:  288   Median :1177.5  
+##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
+##  3rd Qu.: 27.00   2012-10-05:  288   3rd Qu.:1766.2  
+##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
+##                   (Other)   :15840
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 library(ggplot2)
 csv$WW <- weekdays(as.Date(csv$date))
 newWW <- sapply(csv$WW, function(x) {if (x == "Sunday" || x == "Saturday") {"weekend"} else {"weekday"}})
@@ -128,3 +183,5 @@ p <- p + xlab("Number of steps")
 p <- p + ylab("Interval")
 print(p)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
